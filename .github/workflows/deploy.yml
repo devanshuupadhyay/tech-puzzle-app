@@ -1,0 +1,47 @@
+# .github/workflows/deploy.yml
+name: Deploy TechPuzzle Backend
+
+on:
+  push:
+    # Trigger the workflow whenever code is pushed to the 'main' branch
+    branches:
+      - main
+    # Only trigger if changes are made within the backend folder or the template
+    paths:
+      - "backend/**"
+      - "template.yaml"
+
+env:
+  # Set the AWS region once for all steps
+  AWS_REGION: us-east-2
+  # Use the SAM build flag we determined works best for packaging
+  SAM_CLI_CONTAINER: --use-container
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # Use a standard Linux runner
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Inject the secrets stored in GitHub
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up SAM CLI
+        uses: aws-actions/setup-sam@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11" # Match the Lambda runtime version
+
+      - name: SAM Build (Containerized)
+        run: sam build ${{ env.SAM_CLI_CONTAINER }}
+
+      - name: SAM Deploy
+        run: sam deploy --no-confirm-changeset --no-fail-on-empty-changeset
