@@ -1,0 +1,6 @@
+{
+  "pathParameters": {
+    "puzzleId": "ARCH001"
+  },
+  "httpMethod": "GET"
+}

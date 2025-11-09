@@ -1,0 +1,10 @@
+# Python environment
+.venv/
+__pycache__/
+
+# SAM/AWS artifacts
+.aws-sam/
+samconfig.toml
+
+# Local IDE settings
+.vscode/

@@ -1,0 +1,6 @@
+{
+  "PuzzleAPI": {
+    "DYNAMODB_ENDPOINT": "http://host.docker.internal:8000",
+    "BOTOCORE_LOG_LEVEL": "DEBUG"
+  }
+}
