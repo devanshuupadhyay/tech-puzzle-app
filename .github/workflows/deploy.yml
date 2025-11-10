@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - backend/**
-      - template.yaml
+    # Paths filter removed to guarantee registration
 
 env:
   AWS_REGION: us-east-2
