@@ -34,4 +34,4 @@ jobs:
         run: sam build ${{ env.SAM_CLI_CONTAINER }}
 
       - name: SAM Deploy
-        run: sam deploy --stack-name TechPuzzleBackendStack --region ${{ env.AWS_REGION }} --no-confirm-changeset --no-fail-on-empty-changeset
+        run: sam deploy --stack-name TechPuzzleBackendStack --region us-east-2 --no-confirm-changeset --no-fail-on-empty-changeset --resolve-s3
