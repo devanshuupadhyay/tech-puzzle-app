@@ -34,4 +34,4 @@ jobs:
         run: sam build ${{ env.SAM_CLI_CONTAINER }}
 
       - name: SAM Deploy
-        run: sam deploy --stack-name TechPuzzleBackendStack --region ${{ env.AWS_REGION }} --no-confirm-changeset --no-fail-on-empty-changeset --resolve-s3 --capabilities CAPABILITY_NAMED_IAM
+        run: sam deploy --stack-name TechPuzzleBackendStack --region ${{ env.AWS_REGION }} --no-confirm-changeset --no-fail-on-empty-changeset --resolve-s3 --capabilities CAPABILITY_NAMED_IAM --parameter-overrides CognitoUserPoolId=${{ secrets.COGNITO_USER_POOL_ID }}
