@@ -1,20 +1,29 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: TechPuzzle Serverless Backend Architecture
-# Workflow trigger test v1.0
+
+Parameters:
+  CognitoUserPoolId:
+    Type: String
+    Description: The ID of the existing AWS Cognito User Pool for user authentication.
+
 Resources:
   # 1. API Gateway Resource (The API Tier Configuration)
   TechPuzzleApi:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
-      # CORS configuration is valid here, applies to entire API
       Cors:
         AllowOrigin: "'*'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
         AllowMethods: "'GET,OPTIONS,POST'"
-        
-  # 2. Lambda Function Resource (The Logic Tier)
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            # Uses !Sub to dynamically construct the ARN using the UserPoolId parameter
+            UserPoolArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPoolId}"
+
+  # 2. Lambda Function Resource (The Logic Tier - Retrieval)
   PuzzleAPI:
     Type: AWS::Serverless::Function
     Properties:
@@ -25,27 +34,26 @@ Resources:
       Timeout: 10
       CodeUri: backend
       Policies:
-        # Policy grants read/write permissions to the DynamoDB table
         - DynamoDBCrudPolicy:
             TableName: TechPuzzleBlueprints
       Events:
-        # API Gateway Trigger Configuration
         GetPuzzle:
           Type: Api
           Properties:
             Path: /puzzle/{puzzleId}
             Method: GET
+            # Links to the defined API Gateway resource
             RestApiId: !Ref TechPuzzleApi
 
   # 3. CRITICAL FIX: IAM Permission Resource 🛡️
-  # Explicitly grants API Gateway the authority to call this Lambda function (Fixes the 403 Forbidden)
+  # Explicitly grants API Gateway permission to call the Lambda function (Fixes the 403 Forbidden)
   ApiGatewayInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref PuzzleAPI
       Principal: apigateway.amazonaws.com
-      # Strict YAML formatting of the !Sub array for the RestApiId substitution
+      # Uses the !Sub array syntax to build the SourceARN correctly
       SourceArn: !Sub
         - 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiId}/*/*'
         - RestApiId: !Ref TechPuzzleApi
